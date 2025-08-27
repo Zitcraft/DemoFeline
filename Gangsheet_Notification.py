@@ -1,17 +1,30 @@
-import requests
-import dropbox
+import os
+import re
 import time
 import threading
-import re
+import requests
+import dropbox
 
-# ====== CONFIG ======
-TOKEN = "8407339114:AAHu-8Lnq2YBCJZGDACXlTuhtUTz4PfSooU"
-CHAT_ID = "6476182796"  # Chat mặc định ban đầu (cá nhân)
-DROPBOX_TOKEN_API = "https://pressify.us/api/getToken?key=9I7pbBig1LkE45O3uOWb"
-DROPBOX_FOLDER = "/gangsheet/"
-OFFSET = None  # để tránh đọc lại tin nhắn cũ
-SCHEDULE_INTERVAL = 1800  # 10 phút
-BOT_USERNAME = None  # sẽ lấy động bằng getMe
+# ==== CONFIG (lấy từ ENV, có fallback an toàn) ====
+TOKEN = os.getenv("TELEGRAM_TOKEN", "").strip()
+CHAT_ID = os.getenv("CHAT_ID", "").strip()     # để trống nếu chưa chắc
+DROPBOX_TOKEN_API = os.getenv("DROPBOX_TOKEN_API", "").strip()
+DROPBOX_FOLDER = os.getenv("DROPBOX_FOLDER", "/gangsheet/").strip()
+SCHEDULE_INTERVAL = int(os.getenv("SCHEDULE_INTERVAL", "1800"))  # 1800s = 30 phút
+OFFSET = None
+BOT_USERNAME = None
+
+# ép kiểu CHAT_ID nếu có
+if CHAT_ID.isdigit() or (CHAT_ID.startswith("-") and CHAT_ID[1:].isdigit()):
+    CHAT_ID = int(CHAT_ID)
+else:
+    CHAT_ID = None  # sẽ add sau khi bot nhận tin nhắn
+
+# kiểm tra cấu hình tối thiểu
+if not TOKEN:
+    raise RuntimeError("Thiếu TELEGRAM_TOKEN (đặt trong App Spec envs).")
+if not DROPBOX_TOKEN_API:
+    raise RuntimeError("Thiếu DROPBOX_TOKEN_API (đặt trong App Spec envs).")
 
 # Danh sách các chat đã đăng ký nhận báo cáo định kỳ (set id)
 SUBSCRIBERS = set()

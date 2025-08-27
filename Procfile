@@ -1,1 +1,1 @@
-web: python Gangsheet_Notification.py
+worker: python Gangsheet_Notification.py
