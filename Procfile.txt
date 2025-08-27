@@ -1,1 +1,1 @@
-web: python3.10 Gangsheet_Notification.py
+web: python Gangsheet_Notification.py
